@@ -1,4 +1,4 @@
-# Async-Cache
+# `@juriadams/async-cache`
 
 `async-cache` is an efficient caching utility with asynchronous capabilities for third-party retrieval and revalidation. It is particularly useful when caching third-party API calls where you always expect a value to be returned.
 
@@ -12,7 +12,7 @@
 ## Basic Usage
 
 ```ts
-import Cache from "async-cache";
+import Cache from "@juriadams/async-cache";
 
 const cache = new Cache({
     // 10 seconds TTL.
