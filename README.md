@@ -1,6 +1,6 @@
-# `@juriadams/async-cache`
+# `async-cache`
 
-`async-cache` is an efficient caching utility with asynchronous capabilities for third-party retrieval and revalidation. It is particularly useful when caching third-party API calls where you always expect a value to be returned.
+[`@juriadams/async-cache`](https://npmjs.com/package/@juriadams/async-cache) is an efficient caching utility with asynchronous capabilities for third-party retrieval and revalidation. It is particularly useful when caching third-party API calls where you always expect a value to be returned.
 
 ### Key Features
 
