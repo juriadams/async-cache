@@ -1,5 +1,5 @@
 {
-    "name": "async-cache",
+    "name": "@juriadams/async-cache",
     "version": "0.1.0",
     "description": "A supercharged caching utility for the edge.",
     "main": "./dist/index.mjs",
