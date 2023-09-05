@@ -14,6 +14,18 @@ describe("basic operations", () => {
 
         expect(value).toBe("bar");
     });
+
+    it("should return the correct cache size", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+        });
+
+        cache.set("foo", "bar");
+        expect(cache.size).toBe(1);
+
+        cache.set("baz", "qux");
+        expect(cache.size).toBe(2);
+    });
 });
 
 describe("ttl", () => {

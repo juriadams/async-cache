@@ -70,6 +70,14 @@ export class Cache<K, V> {
     private readonly resolve: CacheOptions<K, V>["resolve"];
     private readonly revalidateFunction: CacheOptions<K, V>["revalidate"];
 
+    /**
+     * The number of items currently inside the cache. This includes items
+     * past their TTL.
+     */
+    public get size() {
+        return this.cache.size;
+    }
+
     constructor(options: CacheOptions<K, V>) {
         this.ttl = options.ttl;
         this.resetTtlOnGet = options.resetTtlOnGet;
