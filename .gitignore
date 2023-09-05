@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Build Output
+dist/
+
+# Test Coverage
+coverage/
