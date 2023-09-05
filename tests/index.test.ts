@@ -65,6 +65,49 @@ describe("ttl", () => {
     });
 });
 
+describe("maximum size", () => {
+    it("should respect the maximum size", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000 * 10,
+            maxSize: 3,
+        });
+
+        cache.set("1", "foo");
+        cache.set("2", "bar");
+        cache.set("3", "baz");
+
+        expect(cache.size).toBe(3);
+
+        cache.set("4", "qux");
+
+        expect(cache.size).toBe(3);
+
+        // Make sure the item added first was removed.
+        expect(await cache.get("1")).toBeUndefined();
+    });
+
+    it("should evict all items past their ttl", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 5,
+            maxSize: 3,
+        });
+
+        cache.set("1", "foo");
+        cache.set("2", "bar");
+        cache.set("3", "baz");
+
+        expect(cache.size).toBe(3);
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        cache.set("4", "qux");
+
+        // Make sure all items past their ttl were removed.
+        expect(cache.size).toBe(1);
+        expect(await cache.get("4")).toBe("qux");
+    });
+});
+
 describe("resolving", () => {
     it("should resolve a missed value", async () => {
         const cache = new Cache<string, string>({

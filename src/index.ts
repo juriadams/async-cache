@@ -7,6 +7,15 @@ interface CacheOptions<K, V> {
     ttl: number;
 
     /**
+     * The maximum number of items to store in the cache. If the cache is full,
+     * the least recently used item will be purged from the cache and retrievals
+     * will return `undefined`.
+     *
+     * This option should be used as otherwise, the cache might grow indefinitely.
+     */
+    maxSize?: number;
+
+    /**
      * If set to `true`, the `ttl` of an item will be reset every time it is
      * retrieved from the cache.
      */
@@ -64,6 +73,7 @@ export class Cache<K, V> {
     private readonly cache = new Map<K, CacheItem<V>>();
 
     public readonly ttl: CacheOptions<K, V>["ttl"];
+    public readonly maxSize: CacheOptions<K, V>["maxSize"];
     public readonly resetTtlOnGet: CacheOptions<K, V>["resetTtlOnGet"];
     public readonly revalidateOnGet: CacheOptions<K, V>["revalidateOnGet"];
 
@@ -80,6 +90,7 @@ export class Cache<K, V> {
 
     constructor(options: CacheOptions<K, V>) {
         this.ttl = options.ttl;
+        this.maxSize = options.maxSize;
         this.resetTtlOnGet = options.resetTtlOnGet;
         this.revalidateOnGet = options.revalidateOnGet;
         this.resolve = options.resolve;
@@ -109,6 +120,25 @@ export class Cache<K, V> {
      * @returns `CacheItem` containing the stored value.
      */
     public readonly set = (key: K, value: V) => {
+        // If a `maxSize` is set and the cache is full, delete all items
+        // past their TTL and insert the value.
+        console.log(this.cache.size, this.maxSize);
+        if (this.maxSize && this.cache.size >= this.maxSize) {
+            // This is the most compute friendly solution. For identifying
+            // the single last recently used item, we would need to iterate
+            // through the map anyway. Like this, we free up even more items
+            // that would be evicted on the next `cache.set` call.
+            let lru: [K, CacheItem<V>] | undefined = undefined;
+            for (const [key, item] of this.cache.entries()) {
+                if (!lru || item.start < lru[1].start) lru = [key, item];
+
+                if (item.start + item.ttl < new Date().getTime())
+                    this.cache.delete(key);
+            }
+
+            if (lru) this.cache.delete(lru[0]);
+        }
+
         const item: CacheItem<V> = {
             start: new Date().getTime(),
             ttl: this.ttl,
