@@ -18,6 +18,10 @@ const cache = new Cache({
     // 10 seconds TTL.
     ttl: 1000 * 10,
 
+    // If this limit is reached, the last recently updated item and all items
+    // past their TTL are evicted to make room for more.
+    maxSize: 5,
+
     // Reset TTL back to 10 seconds after retrieving.
     resetTtlOnGet: true,
 
