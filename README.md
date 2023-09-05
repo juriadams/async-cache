@@ -59,6 +59,8 @@ cache.delete("@leo");
 
 This code initializes a `new Cache()` with some options including a TTL, whether to reset TTL and revalidate on getting data, and the custom resolve/revalidate functions. Then, it demonstrates how to set, get, and delete data from the cache.
 
+For more minimal examples covering all possible cases, please refer to the [test suite](/tests/index.test.ts).
+
 ## Installation
 
 ```sh
