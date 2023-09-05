@@ -122,7 +122,6 @@ export class Cache<K, V> {
     public readonly set = (key: K, value: V) => {
         // If a `maxSize` is set and the cache is full, delete all items
         // past their TTL and insert the value.
-        console.log(this.cache.size, this.maxSize);
         if (this.maxSize && this.cache.size >= this.maxSize) {
             // This is the most compute friendly solution. For identifying
             // the single last recently used item, we would need to iterate
