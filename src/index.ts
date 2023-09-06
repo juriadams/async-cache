@@ -8,15 +8,15 @@ type Resolver<K, V> = (
     key: K
 ) => Promise<V | undefined>;
 
+/**
+ * A function used to revalidate an item inside the cache.
+ * @param key The key of the resource that has been requested.
+ */
 type Revalidator<K, V> = (
     /**
      * The key of the resource that has been requested.
      */
-    key: K,
-    /**
-     * If present, the stale value that is currently cached.
-     */
-    staleValue: V | undefined
+    key: K
 ) => Promise<V | undefined>;
 
 interface CacheOptions<K, V> {
