@@ -208,7 +208,7 @@ export class Cache<K, V> {
 
         let value: V | undefined = undefined;
         for (const revalidator of revalidators) {
-            value = await revalidator(key, value).catch(() => undefined);
+            value = await revalidator(key).catch(() => undefined);
             if (value) break;
         }
 
