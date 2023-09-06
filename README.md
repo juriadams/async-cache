@@ -28,7 +28,7 @@ const cache = new Cache({
     revalidateOnGet: true,
 });
 
-cache.set("@leo", { permissions: ["read", "write"]});
+cache.set("@leo", { permissions: ["read", "write"] });
 
 // Resolved from memory (fast).
 await cache.get("@leo");
