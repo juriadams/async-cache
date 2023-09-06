@@ -109,7 +109,7 @@ describe("maximum size", () => {
 });
 
 describe("resolving", () => {
-    it("should resolve a missed value", async () => {
+    it("should resolve a cache miss using one resolve function set in the constructor", async () => {
         const cache = new Cache<string, string>({
             ttl: 1000,
             resolve: async () => "bar",
@@ -119,10 +119,43 @@ describe("resolving", () => {
 
         expect(value).toBe("bar");
     });
+
+    it("should resolve a cache miss using multiple resolve functions set in the constructor", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+            resolve: [async () => undefined, async () => "bar"],
+        });
+
+        const value = await cache.get("foo");
+
+        expect(value).toBe("bar");
+    });
+
+    it("should resolve a cache miss using one resolve function set when calling `get`", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+        });
+
+        const value = await cache.get("foo", { resolve: async () => "bar" });
+
+        expect(value).toBe("bar");
+    });
+
+    it("should resolve a cache miss using multiple resolve functions set when calling `get`", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+        });
+
+        const value = await cache.get("foo", {
+            resolve: [async () => undefined, async () => "bar"],
+        });
+
+        expect(value).toBe("bar");
+    });
 });
 
 describe("revalidation", () => {
-    it("should resolve a missed value", async () => {
+    it("revalidate a retrieved value", async () => {
         const cache = new Cache<string, string>({
             ttl: 1000,
             revalidate: async () => "baz",
@@ -132,6 +165,67 @@ describe("revalidation", () => {
         cache.set("foo", "bar");
 
         expect(await cache.get("foo")).toBe("bar");
+
+        // Wait for the asynchronous revalidation to complete.
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        // After retrieving the value once, it should be revalidated and now
+        // return the new value.
+        expect(await cache.get("foo")).toBe("baz");
+    });
+
+    it("revalidate a retrieved value using multiple `revalidate` functions", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+            revalidate: [async () => undefined, async () => "baz"],
+            revalidateOnGet: true,
+        });
+
+        cache.set("foo", "bar");
+
+        expect(await cache.get("foo")).toBe("bar");
+
+        // Wait for the asynchronous revalidation to complete.
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        // After retrieving the value once, it should be revalidated and now
+        // return the new value.
+        expect(await cache.get("foo")).toBe("baz");
+    });
+
+    it("revalidate a retrieved value using a revalidate function passed to `Cache.revalidate`", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+        });
+
+        cache.set("foo", "bar");
+
+        expect(await cache.get("foo")).toBe("bar");
+
+        await cache.revalidate("foo", {
+            revalidate: async () => "baz",
+        });
+
+        // Wait for the asynchronous revalidation to complete.
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        // After retrieving the value once, it should be revalidated and now
+        // return the new value.
+        expect(await cache.get("foo")).toBe("baz");
+    });
+
+    it("revalidate a retrieved value using multiple revalidate functions passed to `Cache.revalidate`", async () => {
+        const cache = new Cache<string, string>({
+            ttl: 1000,
+        });
+
+        cache.set("foo", "bar");
+
+        expect(await cache.get("foo")).toBe("bar");
+
+        await cache.revalidate("foo", {
+            revalidate: [async () => undefined, async () => "baz"],
+        });
 
         // Wait for the asynchronous revalidation to complete.
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -174,7 +268,7 @@ describe("revalidation", () => {
             await new Promise((resolve) => setTimeout(resolve, 10));
         } catch (error) {
             expect(error.message).toBe(
-                "When calling `Cache.revalidate`, a `revalidate` function must be provided in the constructor."
+                "When calling `Cache.revalidate`, at least one `revalidate` function must be provided in the constructor or passed when calling `Cache.revalidate`."
             );
         }
     });
