@@ -69,8 +69,8 @@ interface CacheOptions<K, V> {
      * });
      * ```
      *
-     * If all functions reject or return `undefined`, the cache miss will be
-     * handled gracefully and `undefined` will be returned.
+     * If all functions return `undefined`, the cache miss will be handled
+     * gracefully and `undefined` will be returned.
      *
      * This is useful when caching third party API calls where you always
      * expect a value to be returned.
@@ -102,8 +102,8 @@ interface CacheOptions<K, V> {
      *
      * While revalidation is pending, stale data is returned.
      *
-     * If all functions reject or return `undefined`, the item will be evicted
-     * from the cache as it does no longer exist or is invalid.
+     * If all functions return `undefined`, the item will be evicted from the
+     * the cache as it does no longer exist or is invalid.
      *
      * This is useful when using a cache with a long TTL, but you want to verify
      * the validity of the cached values after they are retrieved.
@@ -208,7 +208,7 @@ export class Cache<K, V> {
 
         let value: V | undefined = undefined;
         for (const revalidator of revalidators) {
-            value = await revalidator(key).catch(() => undefined);
+            value = await revalidator(key);
             if (value) break;
         }
 
@@ -283,7 +283,7 @@ export class Cache<K, V> {
         // provided, resolve the value and store it inside the cache.
         if (!hit && resolvers.length) {
             for (const resolver of resolvers) {
-                const value = await resolver(key).catch(() => undefined);
+                const value = await resolver(key);
                 if (value) {
                     hit = this.set(key, value);
                     break;
