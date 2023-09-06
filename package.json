@@ -1,6 +1,6 @@
 {
     "name": "@juriadams/async-cache",
-    "version": "0.2.1",
+    "version": "1.0.0",
     "description": "An efficient caching utility with asynchronous capabilities for third-party retrieval and revalidation.",
     "main": "./dist/index.mjs",
     "scripts": {
