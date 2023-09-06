@@ -4,60 +4,48 @@
 
 ### Key Features
 
--   **Time to live (TTL)**: An item in the cache older than this TTL will be purged, and retrievals will return `undefined`.
+-   **Time to live (TTL)**: An item in the cache older than this TTL will be evicted, and retrievals will return `undefined`.
 -   **TTL Reset**: The TTL of an item can be reset every time it is retrieved from cache.
--   **Revalidation**: The value of a key can be revalidated every time it's retrieved from the cache. While being revalidated, stale data is returned.
+-   **Revalidation**: The value of a key can be revalidated every time it's retrieved from the cache. While revalidation is pending, stale data is returned.
+-   **Layered Revalidation**: One or more function can be passed to revalidate a value. Useful when having a separate caching layer (such as KV).
 -   **Resolving Cache Misses**: For cache misses, a custom `resolve` function resolves and stores items in cache.
+-   **Layered Resolving**: Same as for revalidation, multiple functions can be passed to resolve a value. This way, you can first check faster sources for your data before falling back to the slowest.
 
-## Basic Usage
+## Basic Example
 
 ```ts
 import Cache from "@juriadams/async-cache";
 
 const cache = new Cache({
-    // 10 seconds TTL.
     ttl: 1000 * 10,
-
-    // If this limit is reached, the last recently updated item and all items
-    // past their TTL are evicted to make room for more.
     maxSize: 5,
 
-    // Reset TTL back to 10 seconds after retrieving.
-    resetTtlOnGet: true,
+    // Custom resolving for cache misses.
+    resolve: [async (key) => KV.get(key), async (key) => S3.get(key)]
 
-    // Revalidate items every time they have been retrieved.
+    // Custom revalidation.
+    revalidate: [async (key) => KV.get(key)],
     revalidateOnGet: true,
-
-    // If the cache is missed, resolve the item and store it.
-    resolve: async (key) => {
-        // Implementation for resolving data using key goes here.
-        // For instance, an API call fetching a user record (slow).
-    },
-
-    // Revalidate an item either manually `cache.revalidate(key)` or after
-    // every retrieval (options.revalidateOnGet: true).
-    revalidate: async (key) => {
-        // Implementation for resolving data using key goes here.
-        // For instance, an API call checking if the `updatedAt` timestamp
-        // of the cached record matches (slightly faster, but still slow).
-    },
 });
 
-// Adding new data to the cache.
-cache.set("@juri", { name: "Juri", permissions: ["read", "write"] });
+cache.set("@leo", { permissions: ["read", "write"]});
 
-// Get cached data (resolved from memory).
-const juri = await cache.get("@juri");
+// Resolved from memory (fast).
+await cache.get("@leo");
 
-// Get uncached data (resolved through `resolve` function).
-const leo = await cache.get("@leo");
+// First resolved by checking KV (somewhat slow), then S3 (slow).
+await cache.get("@juri");
 
-// Delete data from the cache.
-cache.delete("@juri");
+// Subsequent retrievals are returned from memory (fast).
+// As `revalidateOnGet` is set, the item is revalidated in the background.
+await cache.get("@juri");
+
+// Manually evict items from the cache.
 cache.delete("@leo");
+cache.delete("@juri");
 ```
 
-This code initializes a `new Cache()` with some options including a TTL, whether to reset TTL and revalidate on getting data, and the custom resolve/revalidate functions. Then, it demonstrates how to set, get, and delete data from the cache.
+This code initializes a `new Cache()` with some options including a TTL, whether to revalidate entries upon retrieval, and the custom resolve/revalidate functions. Then, it demonstrates how to set, get, and delete data from the cache.
 
 For more minimal examples covering all possible cases, please refer to the [test suite](/tests/index.test.ts).
 
@@ -66,6 +54,10 @@ For more minimal examples covering all possible cases, please refer to the [test
 ```sh
 npm i @juriadams/async-cache
 ```
+
+## API
+
+Detailed API specifications are a subject to follow.
 
 ## Contributing
 
